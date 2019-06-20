@@ -1,14 +1,13 @@
-name:                BrainF
+name:                brain-inter-state
 version:             0.1.0.0
-github:              "githubuser/BrainF"
+github:              "JakuJ/brain-inter-state"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+author:              "Jakub Janaszkiewicz"
+maintainer:          "janaszkiewicz.jakub@gmail.com"
+copyright:           "2019 Jakub Janaszkiewicz"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -17,32 +16,37 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/BrainF#readme>
+description:         Please see the README on GitHub at <https://github.com/JakuJ/brain-inter-state#readme>
 
 dependencies:
 - base >= 4.7 && < 5
+- mtl
+- array
+- bytestring
 
 library:
   source-dirs: src
 
 executables:
-  BrainF-exe:
+  brain-inter-state-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -O2
     dependencies:
-    - BrainF
+    - brain-inter-state
 
 tests:
-  BrainF-test:
+  brain-inter-state-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -O2
     dependencies:
-    - BrainF
+    - brain-inter-state
