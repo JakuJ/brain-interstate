@@ -32,7 +32,7 @@ instance MonadPlus (Parser from) where
 
 -- DATA TYPES
 
-data Node = Plus | Minus | MoveLeft | MoveRight | Input | Output | Loop [Node]
+data Node = Plus Int | Minus Int | MoveLeft Int | MoveRight Int | Input | Output | Loop [Node]
     deriving (Show)
 
 -- PARSING PRIMITIVES
@@ -52,20 +52,23 @@ many1 p = do
     rest <- many p
     return $ x : rest
 
+parseGroup :: Char -> (Int -> Node) -> Parser Char Node
+parseGroup c f = fmap (f . length) $ many1 (parseSymbol c)
+
 -- PARSING BRAINFUCK
 
 parsePlus, parseMinus, parseLeft, parseRight, parseInput, parseOutput :: Parser Char Node
-parsePlus = parseAs '+' Plus
-parseMinus = parseAs '-' Minus
-parseLeft = parseAs '<' MoveLeft
-parseRight = parseAs '>' MoveRight
+parsePlus = parseGroup '+' Plus
+parseMinus = parseGroup '-' Minus
+parseLeft = parseGroup '<' MoveLeft
+parseRight = parseGroup '>' MoveRight
 parseInput = parseAs ',' Input
 parseOutput = parseAs '.' Output
 
 parseLoop :: Parser Char Node
 parseLoop = do
     parseSymbol '['
-    list <- many1 parseNode <|> fail "An infinite loop detected ( [] )"
+    list <- many1 parseNode -- TODO: Custom error when empty loop detected
     parseSymbol ']'
     return $ Loop list
 

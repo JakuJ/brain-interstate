@@ -6,12 +6,12 @@ testParser target str = do
         Right _ -> if target then success else failure >> fail "Test case should fail"
         Left err -> if not target then success else failure >> fail err
     where
-        success = putStrLn $ "SUCCESS \""++ str ++ "\""
-        failure = putStrLn $ "FAILURE \"" ++ str ++ "\""
+        success = putStrLn $ "TRYING \""++ str ++ "\"\nSUCCESS"
+        failure = putStrLn $ "TRYING \"" ++ str ++ "\"\nFAILURE"
 
 goodSyntaxTestCases, badSyntaxTestCases :: [String]
-goodSyntaxTestCases = ["", "+-.,<>", "+++[]---", "+[>><++-,][][]", "+++ [] -., comment"]
-badSyntaxTestCases = ["[", "]", "+++[--[..", "+[+[]]-]-"]
+goodSyntaxTestCases = ["", "+-.,<>", "+++[+]---", "+[>><++-,][+][-]", "+++ [.] -., comment"]
+badSyntaxTestCases = ["[", "]", "+++[--[..", "+[+[]]-]-", "[]"]
 
 main :: IO ()
 main = do

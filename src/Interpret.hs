@@ -27,33 +27,24 @@ replace x t@(Tape ix arr) = Tape ix $ arr // [(ix, x)]
 current :: Tape -> Int
 current (Tape ix arr) = arr ! ix
 
-jump :: Int -> Tape -> Tape
-jump n (Tape ix arr) = Tape (ix + n) arr
+changeBy :: Int -> State Tape ()
+changeBy n = do
+    cur <- gets current
+    modify $ replace $ cur + n
+
+jump :: Int -> State Tape ()
+jump n  = do
+    (Tape ix arr) <- get
+    put $ Tape (ix + n) arr
 
 -- Basic State manipulation
 
-increment :: State Tape ()
-increment = do
-    cur <- gets current
-    modify $ replace $ cur + 1
-
-decrement :: State Tape ()
-decrement = do
-    cur <- gets current
-    modify $ replace $ cur - 1
-
-left :: State Tape ()
-left = modify $ jump (-1)
-
-right :: State Tape ()
-right = modify $ jump 1
-
 eval :: Node -> State Tape ()
 eval = \case
-    Plus -> increment
-    Minus -> decrement
-    MoveLeft -> left
-    MoveRight -> right
+    Plus n -> changeBy n
+    Minus n -> changeBy (-n)
+    MoveRight n -> jump n
+    MoveLeft n -> jump (-n)
     _ -> fail "Node type not supported"
 
 -- IO State manipulation
@@ -74,7 +65,9 @@ evalIO n = case n of
     Output -> printOut
     Loop nodes -> do
         cur <- gets current
-        unless (cur == 0) $ interpret nodes >> evalIO n
+        unless (cur == 0) $ do
+            interpret nodes
+            evalIO n
     _ -> modify $ execState $ eval n
 
 -- Actual interpreting
