@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Interpret
 ( runInterpreter, Tape, makeTape )
 where
@@ -7,6 +9,7 @@ import Data.Array (Array, listArray, elems, (!), (//))
 import Control.Monad.State
 
 import Common (query)
+import Parse (Node (..), parseProgram)
 
 data Tape = Tape {index :: Int, tape :: Array Int Int}
 
@@ -45,13 +48,13 @@ left = modify $ jump (-1)
 right :: State Tape ()
 right = modify $ jump 1
 
-eval :: Char -> State Tape ()
-eval c = case c of
-    '+' -> increment
-    '-' -> decrement
-    '<' -> left
-    '>' -> right
-    _ -> fail "Invalid character"
+eval :: Node -> State Tape ()
+eval = \case
+    Plus -> increment
+    Minus -> decrement
+    MoveLeft -> left
+    MoveRight -> right
+    _ -> fail "Node type not supported"
 
 -- IO State manipulation
 
@@ -65,23 +68,21 @@ getInput = do
     x <- liftIO $ query "Enter a character: "
     modify $ replace $ (ord . head) x
 
-evalIO :: Char -> StateT Tape IO ()
-evalIO c = case c of
-    ',' -> getInput
-    '.' -> printOut
-    _ -> modify $ execState $ eval c
+evalIO :: Node -> StateT Tape IO ()
+evalIO n = case n of
+    Input -> getInput
+    Output -> printOut
+    Loop nodes -> do
+        cur <- gets current
+        unless (cur == 0) $ interpret nodes >> evalIO n
+    _ -> modify $ execState $ eval n
 
--- Interpreting a string
+-- Actual interpreting
 
-interpret :: String -> StateT Tape IO ()
-interpret code = do
-    if length code == 0
-        then
-            return ()
-        else do
-            chain evalIO code
-    where
-        chain f = foldl (\acc x -> acc >> f x) (return ())
+interpret :: [Node] -> StateT Tape IO ()
+interpret = foldl (\prev next -> prev >> evalIO next) $ return ()
 
 runInterpreter :: String -> Tape -> IO Tape
-runInterpreter str = execStateT $ interpret str
+runInterpreter str tape = case parseProgram str of
+    Right nodes -> execStateT (interpret nodes) tape
+    Left error -> putStrLn error >> return tape

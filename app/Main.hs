@@ -11,5 +11,5 @@ repl tape = do
 
 main :: IO ()
 main = do
-    n <- read <$> query "Specify tape size: "
+    n <-read <$> query "Specify tape size: "
     repl $ makeTape n

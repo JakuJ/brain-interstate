@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 442d5a8fb476e72204b654b4824eb8dc9399c37fbc8f04d24f158dbce8b79c1f
+-- hash: b68cecc1eccac40ab37bc6d023fcf450259dcf69d42b8871468297b6db2c8b48
 
 name:           brain-inter-state
 version:        0.1.0.0
@@ -28,6 +28,7 @@ library
   exposed-modules:
       Common
       Interpret
+      Parse
   other-modules:
       Paths_brain_inter_state
   hs-source-dirs:
@@ -56,7 +57,7 @@ executable brain-inter-state-exe
 
 test-suite brain-inter-state-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  main-is: Test.hs
   other-modules:
       Paths_brain_inter_state
   hs-source-dirs:
