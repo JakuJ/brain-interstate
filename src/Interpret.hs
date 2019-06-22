@@ -57,7 +57,11 @@ printOut = do
 getInput :: StateT Tape IO ()
 getInput = do
     x <- liftIO $ query "Enter a character: "
-    modify $ replace $ (ord . head) x
+    if length x >= 1 
+        then
+            modify $ replace $ (ord . head) x
+        else
+            liftIO $ putStrLn "ERROR: No character provided"
 
 evalIO :: Node -> StateT Tape IO ()
 evalIO n = case n of
@@ -78,4 +82,4 @@ interpret = foldl (\prev next -> prev >> evalIO next) $ return ()
 runInterpreter :: String -> Tape -> IO Tape
 runInterpreter str tape = case parseProgram str of
     Right nodes -> execStateT (interpret nodes) tape
-    Left error -> putStrLn error >> return tape
+    Left error -> putStrLn ("ERROR: " ++ error) >> return tape

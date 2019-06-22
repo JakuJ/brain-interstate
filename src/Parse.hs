@@ -1,11 +1,12 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 
 module Parse (
     Node (..), parseProgram
 ) where
 
-import Control.Applicative hiding (many)
-import Control.Monad    
+import Control.Applicative
+import Control.Monad.Except
 
 newtype Parser from to = Parser {parse :: [from] -> [(to, [from])]}
 
@@ -45,15 +46,8 @@ parseSymbol x = Parser $ \case
 parseAs :: Eq a => a -> b -> Parser a b
 parseAs x y = parseSymbol x >> return y
 
-many, many1 :: Parser a b -> Parser a [b]
-many p = many1 p <|> pure []
-many1 p = do
-    x <- p
-    rest <- many p
-    return $ x : rest
-
 parseGroup :: Char -> (Int -> Node) -> Parser Char Node
-parseGroup c f = fmap (f . length) $ many1 (parseSymbol c)
+parseGroup c f = fmap (f . length) $ some (parseSymbol c)
 
 -- PARSING BRAINFUCK
 
@@ -65,25 +59,39 @@ parseRight = parseGroup '>' MoveRight
 parseInput = parseAs ',' Input
 parseOutput = parseAs '.' Output
 
-parseLoop :: Parser Char Node
+parseSingletons :: Parser Char Node
+parseSingletons = parsePlus <|> parseMinus <|> parseLeft <|> parseRight <|> parseInput <|> parseOutput
+
+parseLoop :: ExceptT String (Parser Char) Node
 parseLoop = do
-    parseSymbol '['
-    list <- many1 parseNode -- TODO: Custom error when empty loop detected
-    parseSymbol ']'
-    return $ Loop list
+    lift $ parseSymbol '['
+    list <- lift parseCode
+    rb <- lift $ optional $ parseSymbol ']'
 
-parseNode :: Parser Char Node
-parseNode = parsePlus <|> parseMinus <|> parseLeft <|> parseRight <|> parseInput <|> parseOutput <|> parseLoop
+    case list of
+        Left err -> throwError err
+        Right [] -> throwError "Infinite loop detected"
+        Right ls -> case rb of
+            Nothing -> throwError "Missing right bracket"
+            Just ']' -> return $ Loop ls
 
-parseCode :: Parser Char [Node]
-parseCode = many parseNode
+parseCharacter :: Parser Char (Either String Node)
+parseCharacter = runExceptT parseLoop <|> (Right <$> parseSingletons)
+
+parseCode :: Parser Char (Either String [Node])
+parseCode = (foldM chain []) <$> (many parseCharacter)
+    where
+        chain xs (Right x) = Right $ x : xs
+        chain xs (Left err) = Left err
 
 -- EXPORTED FUNCTIONS
 
-runParser :: Parser a b -> [a] -> Either String b
+runParser :: Parser a (Either String b) -> [a] -> Either String b
 runParser (Parser fun) toks = case fun toks of
-    [(r, [])] -> Right r
-    _ -> Left "Parser couldn't consume entire stream"
+    [(Left err, _)] -> Left err
+    [(Right r, [])] -> Right r
+    [(Right _, _)]  -> Left "Parser couldn't consume entire stream"
+    _               -> Left "Unknown parsing error"
 
 alphabet :: [Char]
 alphabet = "+-<>,.[]"
