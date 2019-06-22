@@ -57,7 +57,7 @@ printOut = do
 getInput :: StateT Tape IO ()
 getInput = do
     x <- liftIO $ query "Enter a character: "
-    if length x >= 1 
+    if not $ null x
         then
             modify $ replace $ (ord . head) x
         else

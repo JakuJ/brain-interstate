@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 
 module Parse (
@@ -68,12 +67,12 @@ parseLoop = do
     list <- lift parseCode
     rb <- lift $ optional $ parseSymbol ']'
 
-    case list of
-        Left err -> throwError err
-        Right [] -> throwError "Infinite loop detected"
-        Right ls -> case rb of
-            Nothing -> throwError "Missing right bracket"
-            Just ']' -> return $ Loop ls
+    case rb of
+        Nothing -> throwError "Missing right bracket"
+        Just ']' -> case list of
+            Left err -> throwError err    
+            Right [] -> throwError "Infinite loop detected"
+            Right ls -> return $ Loop ls
 
 parseCharacter :: Parser Char (Either String Node)
 parseCharacter = runExceptT parseLoop <|> (Right <$> parseSingletons)
@@ -81,7 +80,7 @@ parseCharacter = runExceptT parseLoop <|> (Right <$> parseSingletons)
 parseCode :: Parser Char (Either String [Node])
 parseCode = (foldM chain []) <$> (many parseCharacter)
     where
-        chain xs (Right x) = Right $ x : xs
+        chain xs (Right x) = Right $ xs ++ [x]
         chain xs (Left err) = Left err
 
 -- EXPORTED FUNCTIONS
@@ -90,7 +89,7 @@ runParser :: Parser a (Either String b) -> [a] -> Either String b
 runParser (Parser fun) toks = case fun toks of
     [(Left err, _)] -> Left err
     [(Right r, [])] -> Right r
-    [(Right _, _)]  -> Left "Parser couldn't consume entire stream"
+    [(Right _, _)]  -> Left "Missing left bracket"
     _               -> Left "Unknown parsing error"
 
 alphabet :: [Char]

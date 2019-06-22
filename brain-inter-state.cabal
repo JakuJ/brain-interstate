@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b68cecc1eccac40ab37bc6d023fcf450259dcf69d42b8871468297b6db2c8b48
+-- hash: 609932ae8b7805877d7594d22ba66f54f198b85558e7b951e60769edbd6dbd19
 
 name:           brain-inter-state
 version:        0.1.0.0
@@ -36,7 +36,6 @@ library
   build-depends:
       array
     , base >=4.7 && <5
-    , bytestring
     , mtl
   default-language: Haskell2010
 
@@ -51,7 +50,6 @@ executable brain-inter-state-exe
       array
     , base >=4.7 && <5
     , brain-inter-state
-    , bytestring
     , mtl
   default-language: Haskell2010
 
@@ -67,6 +65,5 @@ test-suite brain-inter-state-test
       array
     , base >=4.7 && <5
     , brain-inter-state
-    , bytestring
     , mtl
   default-language: Haskell2010
