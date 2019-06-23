@@ -46,17 +46,16 @@ parseFlag = Flag <$> (parseLong <|> parseShort)
 
 parseBareFilepath :: Parser Char FilePath
 parseBareFilepath = do
-    first <- satisfy $ \x -> isAlpha x || elem x "/."
-    rest <- many $ satisfy $ \x -> isAlphaNum x || isPunctuation x
+    first <- satisfy (not . (== '-'))
+    rest <- many $ satisfy (not . isSpace)
     return $ first : rest
 
 parseQuotedFilepath :: Parser Char FilePath
 parseQuotedFilepath = do
     quote <- consume '\"' <|> consume '\''
-    first <- satisfy $ \x -> isAlpha x || elem x "/."
-    rest <- many $ satisfy $ \x -> x /= quote && (isAlphaNum x || isSeparator x || isPunctuation x)
+    path <- some $ satisfy (not . (==quote))
     consume quote
-    return $ first : rest
+    return path
 
 parseFilepath :: Parser Char FilePath
 parseFilepath = do
