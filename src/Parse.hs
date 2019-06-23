@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Parse (
-    Node (..), parseProgram
+    Parser (..), Node (..), parseProgram
 ) where
 
 import Control.Applicative
@@ -33,7 +33,7 @@ instance MonadPlus (Parser from) where
 -- DATA TYPES
 
 data Node = Plus Int | Minus Int | MoveLeft Int | MoveRight Int | Input | Output | Loop [Node]
-    deriving (Show)
+    deriving (Show, Eq)
 
 -- PARSING PRIMITIVES
 
