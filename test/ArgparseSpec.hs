@@ -5,11 +5,9 @@ import Data.Either (isLeft)
 import Argparse (argparse, Argument (..))
 
 spec :: Spec
-spec = do
+spec = parallel $ do
     describe "Argparse.argparse" $ do
         context "when given good input" $ do
-            it "parses empty input" $ do
-                argparse "" `shouldBe` Right []
             it "parses flags" $ do
                 argparse "-a" `shouldBe` Right [Flag "a"]
                 argparse "-a -b -c" `shouldBe` Right [Flag "a", Flag "b", Flag "c"]
@@ -37,8 +35,11 @@ spec = do
                 argparse "-a --bc test" `shouldBe` Right [Flag "a", Option "bc" "test"]
                 argparse "-a test1.txt --bc test -v -e" `shouldBe` Right [Option "a" "test1.txt", Option "bc" "test", Flag "v", Flag "e"]
                 argparse "a -a --a a a a -a a" `shouldBe` Right [Single "a", Flag "a", Option "a" "a", Single "a", Single "a", Option "a" "a"]
+                argparse "./hello-world.bf -o output" `shouldBe` Right [Single "./hello-world.bf", Option "o" "output"]
 
         context "when given bad input" $ do
+            it "detects empty input" $ do
+                argparse "" `shouldSatisfy` isLeft
             it "detects invalid flags" $ do
                 argparse "---a" `shouldSatisfy` isLeft
                 argparse "-abc" `shouldSatisfy` isLeft

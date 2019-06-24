@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Argparse (
-    argparse, Argument(..)
+    argparse, Argument(..), fromOption, isSingle
 ) where
 
 import Data.Char (isAlpha, isAlphaNum, isSpace, isSeparator, isPunctuation, isDigit)
@@ -12,8 +12,27 @@ import System.FilePath (isValid)
 
 import Parse (Parser (..))
 
-data Argument = Flag String | Option String FilePath | Single FilePath
+-- Argument data structure
+
+data Argument = Flag {flag :: String} | Option {flag :: String, path :: FilePath} | Single {path :: FilePath}
     deriving (Show, Eq)
+
+isSingle :: Argument -> Bool
+isSingle (Single _) = True
+isSingle _ = False
+
+isOption :: Argument -> Bool
+isOption (Option _ _) = True
+isOption _ = False
+
+fromOption :: String -> [Argument] -> String -> String
+fromOption _ [] def = def
+fromOption "" _ def = def
+fromOption op args def = case (filter ((==op) . flag) . filter isOption) args of
+    [] -> def
+    (x:xs) -> path x
+
+-- Parsers
 
 satisfy :: (a -> Bool) -> Parser a a
 satisfy pred = Parser $ \case
@@ -85,7 +104,7 @@ parseArgs = do
     return $ first : rest
 
 argparse :: String -> Either String [Argument]
-argparse "" = Right []
+argparse "" = Left "No arguments provided"
 argparse args = case parse parseArgs args of
         [(as, [])]  -> Right as
         [(_, rest)] -> Left $ "Argument parsing error at: " ++ rest

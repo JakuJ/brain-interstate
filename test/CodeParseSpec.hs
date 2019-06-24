@@ -8,7 +8,7 @@ goodSyntaxTestCases:: [String]
 goodSyntaxTestCases = ["", "+-.,<>", "+++[+]---", "+[>><++-,][+][-]", "+++ [.] -., comment"]
 
 spec :: Spec
-spec = do
+spec = parallel $ do
     describe "Parse.parseProgram" $ do
         it "Properly parses good grammar" $ do
             mapM_ (\t -> parseProgram t `shouldSatisfy` isRight) goodSyntaxTestCases

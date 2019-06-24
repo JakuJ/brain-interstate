@@ -1,4 +1,6 @@
-module Main where
+module REPL (
+    main
+) where
 
 import Common (query)
 import Interpret (runInterpreter, Tape, makeTape)

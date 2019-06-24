@@ -25,19 +25,32 @@ dependencies:
 - process
 - filepath
 - hspec
+- directory
 
 library:
   source-dirs: src
 
 executables:
-  brain-inter-state-exe:
-    main:                Main.hs
+  repl:
+    main:                REPL.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     - -O2
+    - -main-is REPL
+    dependencies:
+    - brain-interstate
+  compiler:
+    main:                Compiler.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+    - -main-is Compiler
     dependencies:
     - brain-interstate
 
@@ -52,3 +65,5 @@ tests:
     - -O2
     dependencies:
     - brain-interstate
+    - hspec
+    - directory
