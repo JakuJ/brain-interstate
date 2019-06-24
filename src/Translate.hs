@@ -14,7 +14,7 @@ runtimeStart = "#include <stdlib.h>\n\
 \int *p = tape;\n"
 
 runtimeEnd :: String
-runtimeEnd = "return 0;\n}\n"
+runtimeEnd = "free(tape);\nreturn 0;\n}\n"
 
 translate :: Node -> String
 translate (Plus n) = "(*p) += " ++ show n ++ ";\n"
