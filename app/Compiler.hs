@@ -12,7 +12,7 @@ import Compile (runCompiler)
 usage :: IO ()
 usage = do
     name <- getProgName
-    putStrLn $ "Usage:\t" ++ name ++ "[-S] [-o <path>] <source file path>"
+    putStrLn $ "Usage:\t" ++ name ++ " [-S] [-o <path>] <source file path>"
     putStrLn "Options:"
     mapM_ (putStrLn . ('\t':)) ["-S - don't remove the generated .c file",
                                 "-o <path> - redirect output to file"]

@@ -24,14 +24,12 @@ dependencies:
 - array
 - process
 - filepath
-- hspec
-- directory
 
 library:
   source-dirs: src
 
 executables:
-  repl:
+  bf-repl:
     main:                REPL.hs
     source-dirs:         app
     ghc-options:
@@ -42,7 +40,7 @@ executables:
     - -main-is REPL
     dependencies:
     - brain-interstate
-  compiler:
+  bf-compiler:
     main:                Compiler.hs
     source-dirs:         app
     ghc-options:
